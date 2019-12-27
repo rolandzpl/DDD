@@ -8,14 +8,53 @@
 		<!-- <VersionSuffix>alpha</VersionSuffix> -->
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<PackageId>DDD</PackageId>
+		<Title>Lightweight DDD library</Title>
+		<Description>Lightweight DDD library to support implementation of
+		DDD approach. It supports AggregateRoot, events. Contains default
+		(file-based) implementation of event store, generic repository
+		implementation.</Description>
+		<Authors>Roland Żerek</Authors>
+		<Company>lithium.com.pl</Company>
+		<Copyright>Copyright © 2019 by Roland Żerek (lithium.com.pl)</Copyright>
+		<RootNamespace>DDD</RootNamespace>
+		<AssemblyName>DDD</AssemblyName>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/rolandzpl/DDD.git</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/rolandzpl/DDD</PackageProjectUrl>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="GitVersionTask" Version="5.1.3">
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		  <PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 		<PackageReference Include="Newtonsoft.Json">
-		  <Version>12.0.3</Version>
+			<Version>12.0.3</Version>
 		</PackageReference>
 	</ItemGroup>
+
+	<Target Name="PublishToNugetOrg" DependsOnTargets="Pack">
+		<PropertyGroup>
+			<ApiKey Condition="$(ApiKey) == '' and $(NugetApiKey) != ''">$(NugetApiKey)</ApiKey>
+		</PropertyGroup>
+		<Error Condition="$(ApiKey) == ''" Text="ApiKey must be provided to publish package, i.e.: dotnet msbuild -t:PublishToNugetOrg -p:ApiKey=mynugetapikey" />
+		<PropertyGroup>
+			<PackageSourceUrl>https://api.nuget.org/v3/index.json</PackageSourceUrl>
+			<WorkingDirectory>.\bin\Debug\</WorkingDirectory>
+			<PackageFile>DDD.$(VersionPrefix)$(VersionSuffix).nupkg</PackageFile>
+		</PropertyGroup>
+		<Exec Command="dotnet nuget push $(PackageFile) -k $(ApiKey) -s $(PackageSourceUrl)"
+					WorkingDirectory="$(WorkingDirectory)" />
+	</Target>
+
+	<Target Name="PublishToLocal" DependsOnTargets="Pack">
+		<PropertyGroup>
+			<PackageSourceUrl>c:\Projects\nuget</PackageSourceUrl>
+			<PackageFile>.\bin\Debug\DDD.$(VersionPrefix)$(VersionSuffix).nupkg</PackageFile>
+		</PropertyGroup>
+		<Exec Command="dotnet nuget push '$(PackageFile)' -s $(PackageSourceUrl)" />
+	</Target>
 
 </Project>
