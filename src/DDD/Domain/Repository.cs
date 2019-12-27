@@ -5,42 +5,42 @@ using System.Reflection;
 
 namespace DDD.Domain
 {
-	public class Repository<TEntity, TId> where TEntity :
-		AggregateRoot<TId>,
-		IRepository<TEntity, TId>
-	{
-		private readonly IEventStore eventStore;
+    public class Repository<TEntity, TId> : IRepository<TEntity, TId>
+        where TEntity : AggregateRoot<TId>
 
-		public Repository(IEventStore eventStore)
-		{
-			this.eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
-		}
+    {
+        private readonly IEventStore eventStore;
 
-		public TEntity GetItemById(TId id)
-		{
-			var history = eventStore.GetEventsById(id);
-			if (!history.Any())
-			{
-				throw new KeyNotFoundException($"Instance with id {id} was not found");
-			}
-			var ctor = GetConstructor();
-			var instance = (TEntity)ctor.Invoke(null);
-			instance.LoadFromHistory(history);
-			return instance;
-		}
+        public Repository(IEventStore eventStore)
+        {
+            this.eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
+        }
 
-		private static ConstructorInfo GetConstructor()
-		{
-			return typeof(TEntity)
-				.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
-				.Where(c => c.GetParameters().Length == 0)
-				.FirstOrDefault();
-		}
+        public TEntity GetItemById(TId id)
+        {
+            var history = eventStore.GetEventsById(id);
+            if (!history.Any())
+            {
+                throw new KeyNotFoundException($"Instance with id {id} was not found");
+            }
+            var ctor = GetConstructor();
+            var instance = (TEntity)ctor.Invoke(null);
+            instance.LoadFromHistory(history);
+            return instance;
+        }
 
-		public void Save(TEntity item)
-		{
-			eventStore.SaveEvents(item.Id, item.GetUncommittedChanges(), item.Version);
-			item.ClearUncommittedChanges();
-		}
-	}
+        private static ConstructorInfo GetConstructor()
+        {
+            return typeof(TEntity)
+                .GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(c => c.GetParameters().Length == 0)
+                .FirstOrDefault();
+        }
+
+        public void Save(TEntity item)
+        {
+            eventStore.SaveEvents(item.Id, item.GetUncommittedChanges(), item.Version);
+            item.ClearUncommittedChanges();
+        }
+    }
 }
