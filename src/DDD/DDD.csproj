@@ -9,7 +9,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<PackageId>DDD</PackageId>
+		<PackageId>Lithium.DDD</PackageId>
 		<Title>Lightweight DDD library</Title>
 		<Description>Lightweight DDD library to support implementation of
 		DDD approach. It supports AggregateRoot, events. Contains default
@@ -43,18 +43,22 @@
 		<PropertyGroup>
 			<PackageSourceUrl>https://api.nuget.org/v3/index.json</PackageSourceUrl>
 			<WorkingDirectory>.\bin\Debug\</WorkingDirectory>
-			<PackageFile>DDD.$(VersionPrefix)$(VersionSuffix).nupkg</PackageFile>
+			<PackageFile>$(PackageId).$(VersionPrefix)$(VersionSuffix).nupkg</PackageFile>
 		</PropertyGroup>
-		<Exec Command="dotnet nuget push $(PackageFile) -k $(ApiKey) -s $(PackageSourceUrl)"
-					WorkingDirectory="$(WorkingDirectory)" />
+		<Exec Command="dotnet nuget push $(PackageFile) -k $(ApiKey) -s $(PackageSourceUrl)" WorkingDirectory="$(WorkingDirectory)" />
 	</Target>
 
 	<Target Name="PublishToLocal" DependsOnTargets="Pack">
 		<PropertyGroup>
 			<PackageSourceUrl>c:\Projects\nuget</PackageSourceUrl>
-			<PackageFile>.\bin\Debug\DDD.$(VersionPrefix)$(VersionSuffix).nupkg</PackageFile>
+			<PackageDirectory>$(MSBuildProjectDirectory)\bin\$(Configuration)</PackageDirectory>
+			<PackageFile>DDD.$(VersionPrefix)$(VersionSuffix).nupkg</PackageFile>
 		</PropertyGroup>
-		<Exec Command="dotnet nuget push '$(PackageFile)' -s $(PackageSourceUrl)" />
+		<ConvertToAbsolutePath Paths="$(PackageDirectory)">
+			<Output TaskParameter="AbsolutePaths" PropertyName="PackageDirectory"/>
+		</ConvertToAbsolutePath>
+		<Exec WorkingDirectory="$(PackageDirectory)" 
+			Command="dotnet nuget push '$(PackageFile)' -s $(PackageSourceUrl)" />
 	</Target>
 
 </Project>
