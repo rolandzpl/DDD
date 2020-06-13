@@ -26,7 +26,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="GitVersionTask" Version="5.1.3">
+		<PackageReference Include="GitVersionTask" Version="5.3.5">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
@@ -55,10 +55,9 @@
 			<PackageFile>DDD.$(VersionPrefix)$(VersionSuffix).nupkg</PackageFile>
 		</PropertyGroup>
 		<ConvertToAbsolutePath Paths="$(PackageDirectory)">
-			<Output TaskParameter="AbsolutePaths" PropertyName="PackageDirectory"/>
+			<Output TaskParameter="AbsolutePaths" PropertyName="PackageDirectory" />
 		</ConvertToAbsolutePath>
-		<Exec WorkingDirectory="$(PackageDirectory)" 
-			Command="dotnet nuget push '$(PackageFile)' -s $(PackageSourceUrl)" />
+		<Exec WorkingDirectory="$(PackageDirectory)" Command="dotnet nuget push '$(PackageFile)' -s $(PackageSourceUrl)" />
 	</Target>
 
 </Project>
