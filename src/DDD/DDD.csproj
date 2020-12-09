@@ -26,7 +26,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+<<<<<<< HEAD
 		<PackageReference Include="GitVersionTask" Version="5.5.1">
+=======
+		<PackageReference Include="GitVersionTask" Version="5.3.5">
+>>>>>>> 79d6e50c1ebbbd0ccf0d9571a12ec030dca13d1b
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
