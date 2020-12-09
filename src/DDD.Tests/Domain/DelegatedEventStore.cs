@@ -33,10 +33,11 @@ namespace DDD.Domain
 			return getEventsById(id);
 		}
 
-		public void SaveEvents(object id, IEnumerable<Event> events, int expectedVersion)
+		public int SaveEvents(object id, IEnumerable<Event> events, int expectedVersion)
 		{
 			persistEvents(id, events, expectedVersion);
 			NewEvents?.Invoke(this, new NewEventsEventArgs(events));
+			return 0;
 		}
 
 		IEnumerable<Guid> IEventStore.GetAllEvents()

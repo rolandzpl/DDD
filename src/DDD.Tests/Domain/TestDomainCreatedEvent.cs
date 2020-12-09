@@ -8,7 +8,6 @@ namespace DDD.Domain
 		{
 			Id = id;
 			Version = -1;
-
 		}
 
 		public Guid Id { get; }

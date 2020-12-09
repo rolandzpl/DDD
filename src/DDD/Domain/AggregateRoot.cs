@@ -6,11 +6,13 @@ namespace DDD.Domain
 {
 	public abstract class AggregateRoot<TId>
 	{
-		private readonly List<Event> changes = new List<Event>();
+        public const int UNSPECIFIED_AGGREGATE_VERSION = -1;
+
+        private readonly List<Event> changes = new List<Event>();
 
 		public TId Id { get; protected set; }
 
-		public int Version { get; internal set; }
+		public int Version { get; internal set; } = UNSPECIFIED_AGGREGATE_VERSION;
 
 		public void LoadFromHistory(IEnumerable<Event> history)
 		{
@@ -37,7 +39,7 @@ namespace DDD.Domain
 			ApplyEvent(e);
 		}
 
-		internal void ApplyEvent(Event e)
+		private void ApplyEvent(Event e)
 		{
 			var handler = GetType()
 				.GetRuntimeMethods()

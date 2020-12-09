@@ -39,7 +39,8 @@ namespace DDD.Domain
 
         public void Save(TEntity item)
         {
-            eventStore.SaveEvents(item.Id, item.GetUncommittedChanges(), item.Version);
+            var lastVersion = eventStore.SaveEvents(item.Id, item.GetUncommittedChanges(), item.Version);
+            item.Version = lastVersion;
             item.ClearUncommittedChanges();
         }
     }

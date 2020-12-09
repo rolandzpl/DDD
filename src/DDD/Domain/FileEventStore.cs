@@ -49,23 +49,6 @@ namespace DDD.Domain
                 .ToList();
         }
 
-        private Type GetEventType(string eventName)
-        {
-            return eventTypeResolver.GetEventType(eventName);
-        }
-
-        private static IEnumerable<Type> GetTypesForAssembly(System.Reflection.Assembly asm)
-        {
-            try
-            {
-                return asm.GetTypes();
-            }
-            catch
-            {
-                return Enumerable.Empty<Type>();
-            }
-        }
-
         private IEnumerable<EventData> GetEventDataForId(object id)
         {
             var files = fs.GetFiles(rootDirectory, $"*#{id:N}#*.event");
@@ -84,7 +67,7 @@ namespace DDD.Domain
             }
         }
 
-        public void SaveEvents(object id, IEnumerable<Event> events, int expectedVersion)
+        public int SaveEvents(object id, IEnumerable<Event> events, int expectedVersion)
         {
             if (expectedVersion <= GetMaxVersion(id))
             {
@@ -93,6 +76,7 @@ namespace DDD.Domain
             var currentVersion = expectedVersion;
             foreach (var e in events)
             {
+                currentVersion++;
                 var timestamp = DateTime.UtcNow;
                 var path = Path.Combine(rootDirectory, $"{timestamp.Ticks:X16}#{id:N}#{currentVersion}.event");
                 using (TextWriter writer = fs.CreateText(path))
@@ -104,13 +88,14 @@ namespace DDD.Domain
                         EventId = Guid.NewGuid(),
                         EventName = e.GetType().Name,
                         AggregateId = id,
-                        AggregateVersion = currentVersion++,
+                        AggregateVersion = currentVersion,
                         Payload = serializer.Serialize(e)
                     });
                     writer.Flush();
                 }
             }
             NewEvents?.Invoke(this, new NewEventsEventArgs(events));
+            return currentVersion;
         }
 
         private int GetMaxVersion(object id)
@@ -135,9 +120,19 @@ namespace DDD.Domain
                 .Select(_ => _.EventId);
         }
 
-        private Event DeserializePayload(EventData ed)
+        protected virtual Event DeserializePayload(EventData ed)
         {
-            return serializer.Deserialize(ed.Payload, GetEventType(ed.EventName));
+            var eventType = GetEventType(ed.EventName);
+            if (eventType == null)
+            {
+                throw new UnknownEventTypeException();
+            }
+            return serializer.Deserialize(ed.Payload, eventType);
+        }
+
+        protected virtual Type GetEventType(string eventName)
+        {
+            return eventTypeResolver.GetEventType(eventName);
         }
 
         public Event GetEvent(Guid eventId)
@@ -148,23 +143,6 @@ namespace DDD.Domain
                 .Where(_ => _.EventId == eventId)
                 .Select(_ => DeserializePayload(_))
                 .SingleOrDefault();
-        }
-
-        public interface IEventTypeResolver
-        {
-            Type GetEventType(string eventName);
-        }
-
-        class DefaultEventTypeResolver : IEventTypeResolver
-        {
-            public Type GetEventType(string eventName)
-            {
-                return AppDomain
-                    .CurrentDomain
-                    .GetAssemblies()
-                    .SelectMany(asm => GetTypesForAssembly(asm).Where(t => t.Name == eventName))
-                    .FirstOrDefault();
-            }
         }
     }
 }

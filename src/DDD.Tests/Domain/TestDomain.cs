@@ -12,5 +12,10 @@ namespace DDD.Domain
         }
 
         private void Apply(TestDomainCreatedEvent e) { }
+
+        public void DoSomeChanges()
+        {
+            ApplyNewEvent(new TestDomainDataChangedEvent(Id, string.Empty));
+        }
     }
 }
