@@ -69,9 +69,10 @@ namespace DDD.Domain
 
         public int SaveEvents(object id, IEnumerable<Event> events, int expectedVersion)
         {
-            if (expectedVersion <= GetMaxVersion(id))
+            var maxVersion = GetMaxVersion(id);
+            if (expectedVersion <= maxVersion)
             {
-                throw new ConcurrencyException();
+                throw new ConcurrencyException(expectedVersion, maxVersion);
             }
             var currentVersion = expectedVersion;
             foreach (var e in events)
